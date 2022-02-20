@@ -2,32 +2,43 @@ package wordFinder;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public class ThreadedWordfinder implements WordFinder {
-    List<String> corpus;
-    static int THREAD_COUNT = 10;
+    List<Word> corpus;
+    static int LETTERS_COUNT = 8;
+    Set<String> letters;
 
     public ThreadedWordfinder() {
         this.corpus = new ArrayList<>();
         parseWords();
+        this.letters = randomSetOfLetters();
     }
 
     public void startProgram() {
         System.out.println("Welcome to the dictionary program");
+        System.out.println("print longest word with: " + letters);
+
         boolean exit = false;
         while (!exit) {
             Scanner scanner = new Scanner(System.in);
             System.out.println("Enter a word to check if it is in the dictionary: ");
             String word = scanner.nextLine();
 
+            if (!wordIsMadeOfLetters(word)) {
+                System.out.println("Word must be made of letters: " + letters);
+                continue;
+            }
+
             try {
-                if (multiThreadedSearch(word)) {
+                if (new MultiThreadedSearch().search(word, corpus)) {
                     System.out.println("The word is in the dictionary");
                 } else {
                     System.out.println("The word is not in the dictionary");
@@ -36,93 +47,40 @@ public class ThreadedWordfinder implements WordFinder {
                 e.printStackTrace();
             }
 
-            System.out.println("Do you want to exit? (y/n)");
+            System.out.println("Do you want to continue? (y/n)");
             String exitString = scanner.nextLine();
-            if (exitString.equals("y")) {
+            if (exitString.equals("n")) {
                 scanner.close();
                 exit = true;
             }
         }
     }
 
-    private boolean searchForWord(String word) {
-        return simpleSearch(word);
-    }
-
-    private boolean multiThreadedSearch(String word) throws InterruptedException {
-        ExecutorService executor = Executors.newFixedThreadPool(THREAD_COUNT);
-
-        List<Future<Boolean>> resultList = new ArrayList<>();
-
-        for (int i = 0; i < THREAD_COUNT; i++) {
-            Future<Boolean> result = executor.submit(new Task(i, corpus, word));
-            resultList.add(result);
-        }
-
-        for (Future<Boolean> future : resultList) {
-            try {
-                if (future.get()) {
-                    executor.shutdown();
-                    return true;
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+    private boolean wordIsMadeOfLetters(String word) {
+        for (char c : word.toCharArray()) {
+            if (!letters.contains(String.valueOf(c))) {
+                return false;
             }
         }
-        // shut down the executor service now
-        executor.shutdown();
-        return false;
+        return true;
     }
 
-    private boolean simpleSearch(String word) {
-        for (String w : corpus) {
-            if (w.equals(word)) {
-                return true;
-            }
+    private Set<String> randomSetOfLetters() {
+        Set<String> letters = new HashSet<>();
+        for (int i = 0; i < LETTERS_COUNT; i++) {
+            letters.add(String.valueOf((char) (97 + (int) (Math.random() * 26))));
         }
-        return false;
+        return letters;
     }
 
     private void parseWords() {
         try {
             Scanner scanner = new Scanner(new File("./corpeus.txt"));
             while (scanner.hasNext()) {
-                corpus.add(scanner.next());
+                corpus.add(new Word(scanner.next()));
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
-    static class Task implements Callable<Boolean> {
-        int section;
-        List<String> corpus;
-        String word;
-
-        public Task(int section, List<String> corpus, String word) {
-            this.section = section;
-            this.corpus = corpus;
-            this.word = word;
-        }
-
-        public Boolean call() throws Exception {
-            try {
-                int onePart = corpus.size() / THREAD_COUNT;
-                int startIndex = section * onePart;
-                int endIndex = onePart * (section + 1);
-
-                for (int i = startIndex; i < endIndex; i++) {
-                    if (corpus.get(i).equals(word)) {
-                        return true;
-                    }
-                }
-
-                return false;
-            } catch (Exception e) {
-                e.printStackTrace();
-                return false;
-            }
-        }
-    }
-
 }
