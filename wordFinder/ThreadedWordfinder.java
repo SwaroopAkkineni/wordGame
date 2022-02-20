@@ -8,8 +8,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 public class ThreadedWordfinder implements WordFinder {
     List<String> corpus;
@@ -53,7 +51,6 @@ public class ThreadedWordfinder implements WordFinder {
 
     private boolean multiThreadedSearch(String word) throws InterruptedException {
         ExecutorService executor = Executors.newFixedThreadPool(THREAD_COUNT);
-        ThreadPoolExecutor pool = (ThreadPoolExecutor) executor;
 
         List<Future<Boolean>> resultList = new ArrayList<>();
 
