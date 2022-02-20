@@ -18,7 +18,6 @@ public class ThreadedWordfinder implements WordFinder {
         parseWords();
     }
 
-    @Override
     public void startProgram() {
         System.out.println("Welcome to the dictionary program");
         boolean exit = false;
@@ -40,6 +39,7 @@ public class ThreadedWordfinder implements WordFinder {
             System.out.println("Do you want to exit? (y/n)");
             String exitString = scanner.nextLine();
             if (exitString.equals("y")) {
+                scanner.close();
                 exit = true;
             }
         }
@@ -55,7 +55,6 @@ public class ThreadedWordfinder implements WordFinder {
         List<Future<Boolean>> resultList = new ArrayList<>();
 
         for (int i = 0; i < THREAD_COUNT; i++) {
-            // executor.submit(new Task(i, corpus, word));
             Future<Boolean> result = executor.submit(new Task(i, corpus, word));
             resultList.add(result);
         }
@@ -114,7 +113,6 @@ public class ThreadedWordfinder implements WordFinder {
 
                 for (int i = startIndex; i < endIndex; i++) {
                     if (corpus.get(i).equals(word)) {
-                        // System.out.println("Found word: " + word + " in section: " + section);
                         return true;
                     }
                 }
