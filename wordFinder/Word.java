@@ -16,4 +16,8 @@ class Word {
             letters.add(String.valueOf(c));
         }
     }
+
+    public boolean fits(Set<String> letters2) {
+        return letters.contains(letters2);
+    }
 }
