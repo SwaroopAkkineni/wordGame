@@ -1,4 +1,4 @@
-package wordFinder;
+package corpus;
 
 import java.util.HashSet;
 import java.util.Set;
