@@ -3,8 +3,6 @@ import dailyWords.DailyWordsImpl;
 
 public class Main {
     public static void main(String[] args) {
-        // var corpus = new Corpus();
-
         // generate daily letters
         var dailyLettersImpl = new DailyLettersImpl();
         var dailyLetters = dailyLettersImpl.getDailyLetters();
